@@ -70,15 +70,29 @@ fn task_1(mut boards: Vec<BingoBoard>, draws: &Vec<i32>) -> i32 {
             .map(|board| mark_board(board, *draw))
             .collect::<Vec<BingoBoard>>();
         let winning_boards = boards.iter().find(|board| check_bingo(board));
-        let result = match winning_boards {
-            Some(board) => draw * calculate_bingo_sum(board),
-            None => -1,
+        match winning_boards {
+            Some(board) => return draw * calculate_bingo_sum(board),
+            None => {}
         };
-        if result >= 0 {
-            return result;
+    }
+    panic!("Did not find any winning boards!");
+}
+
+fn task_2(mut boards: Vec<BingoBoard>, draws: &Vec<i32>) -> i32 {
+    let mut result = -1;
+    for draw in draws.iter() {
+        boards = boards
+            .iter()
+            .map(|board| mark_board(board, *draw))
+            .collect::<Vec<BingoBoard>>();
+        let (winning_boards, open_boards) =
+            boards.into_iter().partition(|board| check_bingo(board));
+        boards = open_boards;
+        for board in winning_boards.iter() {
+            result = draw * calculate_bingo_sum(board);
         }
     }
-    -1
+    result
 }
 
 fn main() {
@@ -104,5 +118,6 @@ fn main() {
         }
         acc
     });
-    println!("Task 1 result: {}", task_1(boards.clone(), &bingo_draws))
+    println!("Task 1 result: {}", task_1(boards.clone(), &bingo_draws));
+    println!("Task 2 result: {}", task_2(boards.clone(), &bingo_draws));
 }
