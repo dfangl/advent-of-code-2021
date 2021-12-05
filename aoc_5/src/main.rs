@@ -35,18 +35,26 @@ impl Line {
     }
 }
 
+fn get_range_inclusive(start: u32, end: u32) -> (u32, u32) {
+    if start <= end {
+        (start, end + 1)
+    } else {
+        (end, start + 1)
+    }
+}
+
+fn get_range_iterator_inclusive(start: u32, end: u32) -> Box<dyn Iterator<Item = u32>> {
+    if start <= end {
+        Box::new(start..end + 1)
+    } else {
+        Box::new((end..start + 1).rev())
+    }
+}
+
 fn calculate_horizontal_vertical_lines(result_map: &mut HashMap<Point, u32>, line: &Line) {
     // ranges not created since they have to be created multiple times
-    let (x1, x2) = if line.p1.x <= line.p2.x {
-        (line.p1.x, line.p2.x + 1)
-    } else {
-        (line.p2.x, line.p1.x + 1)
-    };
-    let (y1, y2) = if line.p1.y <= line.p2.y {
-        (line.p1.y, line.p2.y + 1)
-    } else {
-        (line.p2.y, line.p1.y + 1)
-    };
+    let (x1, x2) = get_range_inclusive(line.p1.x, line.p2.x);
+    let (y1, y2) = get_range_inclusive(line.p1.y, line.p2.y);
 
     for x in x1..x2 {
         for y in y1..y2 {
@@ -58,26 +66,20 @@ fn calculate_horizontal_vertical_lines(result_map: &mut HashMap<Point, u32>, lin
 
 fn calculate_diagonal_lines(result_map: &mut HashMap<Point, u32>, line: &Line) {
     // boxing necessary to avoid type mismatch between Rev and Range
-    let range_x: Box<dyn Iterator<Item = u32>> = if line.p1.x <= line.p2.x {
-        Box::new(line.p1.x..line.p2.x + 1)
-    } else {
-        Box::new((line.p2.x..line.p1.x + 1).rev())
-    };
-    let range_y: Box<dyn Iterator<Item = u32>> = if line.p1.y <= line.p2.y {
-        Box::new(line.p1.y..line.p2.y + 1)
-    } else {
-        Box::new((line.p2.y..line.p1.y + 1).rev())
-    };
+    let range_x = get_range_iterator_inclusive(line.p1.x, line.p2.x);
+    let range_y = get_range_iterator_inclusive(line.p1.y, line.p2.y);
     let iterator = range_x.zip(range_y);
     for (x, y) in iterator {
-        let entry = result_map
-            .entry(Point {
-                x,
-                y: y.try_into().unwrap(),
-            })
-            .or_insert(0);
+        let entry = result_map.entry(Point { x, y }).or_insert(0);
         *entry += 1;
     }
+}
+
+fn calculate_score(result_map: HashMap<Point, u32>) -> u32 {
+    result_map
+        .into_iter()
+        .map(|(_, value)| if value > 1 { 1 } else { 0 })
+        .sum()
 }
 
 fn task_1(lines: &Vec<Line>) -> u32 {
@@ -92,10 +94,7 @@ fn task_1(lines: &Vec<Line>) -> u32 {
                 calculate_horizontal_vertical_lines(acc.borrow_mut(), line);
                 acc
             });
-    point_map
-        .into_iter()
-        .map(|(_, value)| if value > 1 { 1 } else { 0 })
-        .sum()
+    calculate_score(point_map)
 }
 
 fn task_2(lines: &Vec<Line>) -> u32 {
@@ -107,10 +106,7 @@ fn task_2(lines: &Vec<Line>) -> u32 {
         }
         acc
     });
-    point_map
-        .into_iter()
-        .map(|(_, value)| if value > 1 { 1 } else { 0 })
-        .sum()
+    calculate_score(point_map)
 }
 
 fn main() {
