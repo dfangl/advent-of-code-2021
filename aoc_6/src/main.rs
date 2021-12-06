@@ -17,8 +17,7 @@ where
 fn simulate_cycles(jellyfish_ages: &[u64; 9], cycles: u32) -> u64 {
     let mut ages = jellyfish_ages.clone();
     for _ in 0..cycles {
-        ages = (0..ages.len()).fold([0u64; 9], |mut acc, idx| {
-            let value = ages[idx];
+        ages = ages.into_iter().enumerate().fold([0u64; 9], |mut acc, (idx, value) | {
             if idx == 0 {
                 acc[6] += value;
                 acc[8] += value;
