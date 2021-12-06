@@ -14,10 +14,10 @@ where
         .collect()
 }
 
-fn simulate_cycles(jellyfish_ages: &[u128; 9], cycles: u32) -> u128 {
+fn simulate_cycles(jellyfish_ages: &[u64; 9], cycles: u32) -> u64 {
     let mut ages = jellyfish_ages.clone();
     for _ in 0..cycles {
-        ages = (0..ages.len()).rev().fold([0u128; 9], |mut acc, idx| {
+        ages = (0..ages.len()).rev().fold([0u64; 9], |mut acc, idx| {
             let value = ages[idx];
             if idx == 0 {
                 acc[6] += value;
@@ -40,7 +40,7 @@ fn main() {
         .split(",")
         .map(|num| num.parse().unwrap())
         .collect();
-    let jellyfish_ages = input.iter().fold([0u128; 9], |mut acc, input| {
+    let jellyfish_ages = input.iter().fold([0u64; 9], |mut acc, input| {
         acc[*input as usize] += 1;
         acc
     });
