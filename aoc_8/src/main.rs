@@ -41,27 +41,18 @@ fn task_2(lookup_map: &Vec<(u8, Vec<(u8, u8)>)>, observation: &Observation) -> u
             });
     for value in observation.signals.iter() {
         if !number_representations.values().any(|val| val == value) {
-            for (key, val) in lookup_map.iter() {
-                let mut result = true;
-                for (n_key, n_val) in val.iter() {
-                    match number_representations.get(n_key) {
-                        Option::Some(x) => {
-                            if value.intersection(x).count() != *n_val as usize {
-                                result = false;
-                                break;
-                            }
-                        }
-                        Option::None => {
-                            result = false;
-                            break;
-                        }
-                    }
-                }
-                if result {
-                    number_representations.insert(*key, value.clone());
-                    break;
-                }
-            }
+            let number = lookup_map
+                .iter()
+                .find(|(_, val)| {
+                    val.iter()
+                        .all(|(n_key, n_val)| match number_representations.get(n_key) {
+                            Option::Some(x) => value.intersection(x).count() == *n_val as usize,
+                            Option::None => false,
+                        })
+                })
+                .unwrap()
+                .0;
+            number_representations.insert(number, value.clone());
         }
     }
     observation
